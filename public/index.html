@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G-Maps Review Scraper | Premium Edition</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-background"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span class="icon">📍</span>
+                <h1>Maps<span>Scraper</span></h1>
+            </div>
+            <p>Estrai recensioni Google Maps in un click.</p>
+        </header>
+
+        <main>
+            <section class="controls">
+                <div class="input-group">
+                    <label for="url">URL Google Maps</label>
+                    <input type="text" id="url" placeholder="Incolla qui l'URL dell'attività..." autocomplete="off">
+                </div>
+
+                <div class="row">
+                    <div class="input-group">
+                        <label for="depth">Profondità (Max Recensioni)</label>
+                        <select id="depth">
+                            <option value="50">50 recensioni</option>
+                            <option value="100">100 recensioni</option>
+                            <option value="500">500 recensioni</option>
+                            <option value="1000">1000 recensioni</option>
+                            <option value="Tutte">Tutte (Attenzione!)</option>
+                        </select>
+                    </div>
+
+                    <button id="start-btn" class="primary-btn">
+                        <span>Avvia Scraping</span>
+                        <div class="loader-inner hidden"></div>
+                    </button>
+                </div>
+            </section>
+
+            <section class="status-container">
+                <div class="status-header">
+                    <h3>Console di Monitoraggio</h3>
+                    <div id="status-badge" class="badge idle">In attesa</div>
+                </div>
+                
+                <div class="progress-bar-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+
+                <div id="console-log" class="console-log">
+                    <div class="log-entry system">Inizializzazione sistema... pronto.</div>
+                </div>
+
+                <div id="result-actions" class="result-actions hidden">
+                    <div class="stats">
+                        <span id="finish-count">0</span> recensioni trovate.
+                    </div>
+                    <a id="download-btn" href="#" class="download-btn">
+                        <span>Scarica JSON</span>
+                        <i class="download-icon">⬇️</i>
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 G-Maps Scraper Tool | Powered by Playwright & Socket.io</p>
+        </footer>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

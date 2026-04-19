@@ -79,16 +79,96 @@ async function run(url, depth, logCallback, stopSignal) {
       }
     }
 
-    // Extract Business Name
-    let businessName = 'reviews';
+    // Extract Business Name - Robust Fallback System
+    let businessName = 'business';
     try {
-      // More robust selectors for title
-      const nameElement = await page.locator('h1.DUwDvf, h1, [data-attrid="title"]').first();
-      businessName = await nameElement.innerText();
-      businessName = businessName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      logCallback({ type: 'info', message: `Business Name: ${businessName}` });
+      logCallback({ type: 'info', message: 'Detecting business name...' });
+      
+      const selectors = [
+        'h1.DUwDvf',        // Maps main title
+        'h1.fontHeadlineLarge', // Alternative Maps title
+        '[data-attrid="title"]', // Google Search Knowledge Panel
+        '.PZPZlf h2 span',   // Google Search alternative
+        'h1',               // Generic H1
+        '.lS300c h1',       // Maps container h1
+        '.vS77db h1'        // Another Maps variant
+      ];
+
+      let detectedName = '';
+
+      // Strategy 1: Selectors
+      for (const selector of selectors) {
+        try {
+          const locator = page.locator(selector).first();
+          if (await locator.isVisible({ timeout: 2000 })) {
+            detectedName = await locator.innerText();
+            if (detectedName && detectedName.trim()) {
+              logCallback({ type: 'success', message: `Business name found via selector: ${detectedName.trim()}` });
+              break;
+            }
+          }
+        } catch (e) {}
+      }
+
+      // Strategy 2: Page Title
+      if (!detectedName) {
+        const pageTitle = await page.title();
+        if (pageTitle && pageTitle.includes('Google Maps')) {
+          detectedName = pageTitle.replace(' - Google Maps', '').trim();
+          logCallback({ type: 'info', message: `Business name extracted from page title: ${detectedName}` });
+        } else if (pageTitle && pageTitle.includes('Google Search')) {
+          detectedName = pageTitle.replace(' - Google Search', '').trim();
+          logCallback({ type: 'info', message: `Business name extracted from page title: ${detectedName}` });
+        }
+      }
+
+      // Strategy 3: URL Parsing
+      if (!detectedName) {
+        const decodedUrl = decodeURIComponent(page.url());
+        const mapsMatch = decodedUrl.match(/maps\/place\/([^\/]+)/);
+        if (mapsMatch && mapsMatch[1]) {
+          detectedName = mapsMatch[1].replace(/\+/g, ' ');
+          logCallback({ type: 'info', message: `Business name extracted from URL: ${detectedName}` });
+        }
+      }
+
+      // Strategy 4: Structured Data (JSON-LD)
+      if (!detectedName) {
+        try {
+          detectedName = await page.evaluate(() => {
+            const scripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
+            for (const script of scripts) {
+              try {
+                const data = JSON.parse(script.innerText);
+                if (data.name) return data.name;
+                if (Array.isArray(data)) {
+                  const item = data.find(i => i.name);
+                  if (item) return item.name;
+                }
+              } catch(e) {}
+            }
+            return '';
+          });
+          if (detectedName) {
+            logCallback({ type: 'info', message: `Business name found in JSON-LD: ${detectedName}` });
+          }
+        } catch (e) {}
+      }
+
+      if (detectedName && detectedName.trim()) {
+        businessName = detectedName.trim();
+      } else {
+        logCallback({ type: 'warn', message: 'Could not determine business name from page. Using timestamped fallback.' });
+        businessName = `business_${Date.now()}`;
+      }
+
+      // Sanitize name for filesystem
+      businessName = businessName.replace(/[^a-z0-9]/gi, '_').toLowerCase().substring(0, 50);
+      if (businessName.endsWith('_')) businessName = businessName.slice(0, -1);
+      
     } catch (e) {
-       logCallback({ type: 'warn', message: 'Could not determine business name.' });
+       logCallback({ type: 'warn', message: `Error during business name detection: ${e.message}` });
+       businessName = `business_${Date.now()}`;
     }
 
     // Locate Scrollable Container
@@ -199,7 +279,8 @@ async function run(url, depth, logCallback, stopSignal) {
               type: 'progress', 
               message: `Scraped ${reviews.length} reviews...`, 
               current: reviews.length, 
-              total: maxReviews 
+              total: maxReviews,
+              review: data
             });
 
             await saveIncremental(businessName, reviews);

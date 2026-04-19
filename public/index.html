@@ -21,60 +21,118 @@
             <p>Il tuo caveau digitale per le recensioni Google Maps.</p>
         </header>
 
-        <main>
-            <section class="controls">
-                <div class="input-group">
-                    <label for="url">URL Business Google Maps</label>
-                    <input type="text" id="url" placeholder="Incolla l'URL dell'attività..." autocomplete="off">
-                </div>
+        <div class="mode-navigator">
+            <div class="mode-switcher">
+                <button id="mode-extract-btn" class="active">
+                    <span class="mode-icon">⚡</span>
+                    Estrai
+                </button>
+                <button id="mode-read-btn">
+                    <span class="mode-icon">📖</span>
+                    Leggi
+                </button>
+            </div>
+        </div>
 
-                <div class="row">
+        <main>
+            <!-- Extraction View -->
+            <section id="extract-view">
+                <section class="controls">
                     <div class="input-group">
-                        <label for="depth">Profondità Estrazione</label>
-                        <select id="depth">
-                            <option value="5">5 recensioni</option>
-                            <option value="50">50 recensioni</option>
-                            <option value="100">100 recensioni</option>
-                            <option value="500">500 recensioni</option>
-                            <option value="1000">1000 recensioni</option>
-                            <option value="Tutte">Tutte (Attenzione!)</option>
-                            <option value="custom">Personalizzato...</option>
-                        </select>
-                        <input type="number" id="custom-depth-input" class="hidden" placeholder="Inserisci numero..." min="1" step="1">
+                        <label for="url">URL Business Google Maps</label>
+                        <input type="text" id="url" placeholder="Incolla l'URL dell'attività..." autocomplete="off">
                     </div>
 
-                    <button id="start-btn" class="primary-btn">
-                        <span>Inizia Estrazione</span>
-                        <div class="loader-inner hidden"></div>
-                    </button>
-                    <button id="stop-btn" class="secondary-btn hidden">
-                        <span>Ferma Processo</span>
-                    </button>
-                </div>
+                    <div class="row">
+                        <div class="input-group">
+                            <label for="depth">Profondità Estrazione</label>
+                            <select id="depth">
+                                <option value="5">5 recensioni</option>
+                                <option value="50">50 recensioni</option>
+                                <option value="100">100 recensioni</option>
+                                <option value="500">500 recensioni</option>
+                                <option value="1000">1000 recensioni</option>
+                                <option value="Tutte">Tutte (Attenzione!)</option>
+                                <option value="custom">Personalizzato...</option>
+                            </select>
+                            <input type="number" id="custom-depth-input" class="hidden" placeholder="Inserisci numero..." min="1" step="1">
+                        </div>
+
+                        <button id="start-btn" class="primary-btn">
+                            <span>Inizia Estrazione</span>
+                            <div class="loader-inner hidden"></div>
+                        </button>
+                        <button id="stop-btn" class="secondary-btn hidden">
+                            <span>Ferma Processo</span>
+                        </button>
+                    </div>
+                </section>
+
+                <section class="status-container">
+                    <div class="status-header">
+                        <h3>Console di Estrazione</h3>
+                        <div class="view-controls">
+                            <div class="view-switcher">
+                                <button id="view-logs-btn" class="active" title="Visualizza Logs">Logs</button>
+                                <button id="view-preview-btn" title="Visualizza Recensioni">Anteprima</button>
+                            </div>
+                            <div id="status-badge" class="badge idle">Standby</div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar-container">
+                        <div id="progress-bar" class="progress-bar"></div>
+                    </div>
+
+                    <div class="display-area">
+                        <div id="console-log" class="console-log">
+                            <div class="log-entry system">ReviewVault inizializzato... pronto all'estrazione.</div>
+                        </div>
+
+                        <div id="review-viewer" class="review-viewer hidden">
+                            <div class="empty-state">
+                                <p>Nessuna recensione estratta finora.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="result-actions" class="result-actions hidden">
+                        <div class="stats">
+                            <span id="finish-count">0</span> recensioni archiviate.
+                        </div>
+                        <a id="download-btn" href="#" class="download-btn">
+                            <span>Scarica Caveau (.json)</span>
+                            <i class="download-icon">⬇️</i>
+                        </a>
+                    </div>
+                </section>
             </section>
 
-            <section class="status-container">
-                <div class="status-header">
-                    <h3>Console di Estrazione</h3>
-                    <div id="status-badge" class="badge idle">Standby</div>
-                </div>
-                
-                <div class="progress-bar-container">
-                    <div id="progress-bar" class="progress-bar"></div>
-                </div>
-
-                <div id="console-log" class="console-log">
-                    <div class="log-entry system">ReviewVault inizializzato... pronto all'estrazione.</div>
-                </div>
-
-                <div id="result-actions" class="result-actions hidden">
-                    <div class="stats">
-                        <span id="finish-count">0</span> recensioni archiviate.
+            <!-- Reader View -->
+            <section id="read-view" class="hidden">
+                <div class="drop-zone" id="drop-zone">
+                    <div class="drop-zone-content">
+                        <div class="drop-icon">📂</div>
+                        <h3>Trascina qui il tuo Caveau</h3>
+                        <p>Oppure clicca per selezionare un file JSON</p>
+                        <input type="file" id="file-input" accept=".json" class="hidden">
+                        <button class="primary-btn" onclick="document.getElementById('file-input').click()">Seleziona File</button>
                     </div>
-                    <a id="download-btn" href="#" class="download-btn">
-                        <span>Scarica Caveau (.json)</span>
-                        <i class="download-icon">⬇️</i>
-                    </a>
+                </div>
+
+                <div id="read-viewer-container" class="status-container hidden">
+                    <div class="status-header">
+                        <h3 id="read-business-name">Analisi Caveau</h3>
+                        <div class="view-controls">
+                            <div id="read-stats-badge" class="badge done">0 Recensioni</div>
+                            <button id="close-read-btn" class="copy-review-btn" title="Chiudi file">✕</button>
+                        </div>
+                    </div>
+                    <div class="display-area">
+                        <div id="read-viewer" class="review-viewer">
+                            <!-- JSON content will be rendered here -->
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>

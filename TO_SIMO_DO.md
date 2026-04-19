@@ -1,3 +1,2 @@
-# Manual Actions for Simo
-
-- [ ] Run `npx playwright install chromium` to ensure the scraper can launch the browser.
+# MANUAL ACTIONS NEEDED
+- Nessuna azione manuale richiesta.

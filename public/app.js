@@ -7,6 +7,9 @@ const customDepthInput = document.getElementById('custom-depth-input');
 const startBtn = document.getElementById('start-btn');
 const stopBtn = document.getElementById('stop-btn');
 const consoleLog = document.getElementById('console-log');
+const reviewViewer = document.getElementById('review-viewer');
+const viewLogsBtn = document.getElementById('view-logs-btn');
+const viewPreviewBtn = document.getElementById('view-preview-btn');
 const statusBadge = document.getElementById('status-badge');
 const progressBar = document.getElementById('progress-bar');
 const resultActions = document.getElementById('result-actions');
@@ -15,7 +18,24 @@ const downloadBtn = document.getElementById('download-btn');
 const btnLoader = startBtn.querySelector('.loader-inner');
 const btnText = startBtn.querySelector('span');
 
+// Mode Switches
+const modeExtractBtn = document.getElementById('mode-extract-btn');
+const modeReadBtn = document.getElementById('mode-read-btn');
+const extractView = document.getElementById('extract-view');
+const readView = document.getElementById('read-view');
+
+// Reader Elements
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const readViewerContainer = document.getElementById('read-viewer-container');
+const readViewer = document.getElementById('read-viewer');
+const readBusinessName = document.getElementById('read-business-name');
+const readStatsBadge = document.getElementById('read-stats-badge');
+const closeReadBtn = document.getElementById('close-read-btn');
+
 let isRunning = false;
+let reviews = [];
+let readReviews = [];
 
 // Socket Events
 socket.on('log', (data) => {
@@ -24,6 +44,10 @@ socket.on('log', (data) => {
     if (data.type === 'progress') {
         const percent = Math.min((data.current / data.total) * 100, 100);
         updateProgress(percent || 5); // Minimum 5% to show activity
+        
+        if (data.review) {
+            addReview(data.review);
+        }
     }
 });
 
@@ -65,6 +89,20 @@ socket.on('connect', () => {
 });
 
 // Event Listeners
+viewLogsBtn.addEventListener('click', () => {
+    viewLogsBtn.classList.add('active');
+    viewPreviewBtn.classList.remove('active');
+    consoleLog.classList.remove('hidden');
+    reviewViewer.classList.add('hidden');
+});
+
+viewPreviewBtn.addEventListener('click', () => {
+    viewLogsBtn.classList.remove('active');
+    viewPreviewBtn.classList.add('active');
+    consoleLog.classList.add('hidden');
+    reviewViewer.classList.remove('hidden');
+});
+
 depthSelect.addEventListener('change', () => {
     if (depthSelect.value === 'custom') {
         customDepthInput.classList.remove('hidden');
@@ -97,8 +135,10 @@ startBtn.addEventListener('click', () => {
 
     // Reset UI
     isRunning = true;
+    reviews = [];
     resultActions.classList.add('hidden');
     consoleLog.innerHTML = '';
+    reviewViewer.innerHTML = '<div class="empty-state"><p>In attesa di nuove recensioni...</p></div>';
     updateProgress(0);
     toggleLoading(true);
     
@@ -120,7 +160,136 @@ stopBtn.addEventListener('click', () => {
     stopBtn.innerHTML = '<span>Chiusura in corso...</span>';
 });
 
+// Mode Navigation Logic
+modeExtractBtn.addEventListener('click', () => {
+    modeExtractBtn.classList.add('active');
+    modeReadBtn.classList.remove('active');
+    extractView.classList.remove('hidden');
+    readView.classList.add('hidden');
+});
+
+modeReadBtn.addEventListener('click', () => {
+    if (isRunning) {
+        if (!confirm('L\'estrazione è in corso. Vuoi passare alla modalità lettura? Il processo continuerà in background.')) {
+            return;
+        }
+    }
+    modeExtractBtn.classList.remove('active');
+    modeReadBtn.classList.add('active');
+    extractView.classList.add('hidden');
+    readView.classList.remove('hidden');
+});
+
+// Reader Logic
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('drag-over');
+});
+
+dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('drag-over');
+});
+
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+});
+
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) handleFile(file);
+});
+
+closeReadBtn.addEventListener('click', () => {
+    readViewerContainer.classList.add('hidden');
+    dropZone.classList.remove('hidden');
+    readReviews = [];
+    readViewer.innerHTML = '';
+});
+
+function handleFile(file) {
+    if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+        alert('Per favore, seleziona un file JSON valido.');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+            processReadData(data, file.name);
+        } catch (err) {
+            console.error(err);
+            alert('Errore durante la lettura del file. Assicurati che sia un JSON valido.');
+        }
+    };
+    reader.readAsText(file);
+}
+
+function processReadData(data, fileName) {
+    // Determine business name from file name if not in data
+    let businessName = data.businessName || fileName.replace('.json', '').replace('reviews_', '');
+    
+    // Normalize data structure (handle both array and object formats)
+    const reviewsToLoad = Array.isArray(data) ? data : (data.reviews || []);
+    
+    if (reviewsToLoad.length === 0) {
+        alert('Il file non contiene recensioni valide.');
+        return;
+    }
+
+    readReviews = reviewsToLoad;
+    readBusinessName.textContent = businessName;
+    readStatsBadge.textContent = `${readReviews.length} Recensioni`;
+    
+    renderReadReviews(readReviews);
+    
+    dropZone.classList.add('hidden');
+    readViewerContainer.classList.remove('hidden');
+}
+
+function renderReadReviews(reviewsList) {
+    readViewer.innerHTML = '';
+    reviewsList.forEach(review => {
+        const card = createReviewCard(review, true);
+        readViewer.appendChild(card);
+    });
+}
+
 // Helper Functions
+function sanitizeText(text, userName = null) {
+    if (!text) return '';
+    
+    // 1. Remove common "noise" patterns from Google Maps extraction
+    let clean = text;
+
+    // Remove the username if it appears at the very beginning (common scraping artifact)
+    if (userName && clean.toLowerCase().startsWith(userName.toLowerCase())) {
+        clean = clean.substring(userName.length).trim();
+        // Sometimes there's a newline or a character like '·' or ' ' after the name
+        clean = clean.replace(/^[ \n\r·•]+/, ''); 
+    }
+
+    if (clean.includes('\nLocal Guide')) {
+        const parts = clean.split(/\n{3,}/); // Split by 3 or more newlines
+        if (parts.length > 1) {
+            // Find the longest part which is likely the actual review
+            clean = parts.reduce((a, b) => a.length > b.length ? a : b, '');
+        }
+    }
+    
+    // Remove "Like", "Share" and other buttons text if they leaked in
+    clean = clean.replace(/\n\nLike\n\nShare.*$/s, '');
+    clean = clean.replace(/More\s*$/i, '');
+    
+    // 2. Remove unprintable/control characters (the "squares")
+    clean = clean.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFFFD]/g, '');
+    
+    return clean.trim();
+}
+
 function addLog(message, type = 'info') {
     const entry = document.createElement('div');
     entry.className = `log-entry ${type}`;
@@ -131,6 +300,81 @@ function addLog(message, type = 'info') {
     consoleLog.appendChild(entry);
     consoleLog.scrollTop = consoleLog.scrollHeight;
 }
+
+function addReview(review) {
+    if (reviews.length === 0) {
+        reviewViewer.innerHTML = '';
+    }
+    
+    // Check if review already exists
+    if (reviews.find(r => r.id === review.id)) return;
+    
+    reviews.push(review);
+    const card = createReviewCard(review);
+    reviewViewer.prepend(card);
+}
+
+function createReviewCard(review, isReadMode = false) {
+    const card = document.createElement('div');
+    card.className = 'review-card';
+    card.id = isReadMode ? `read-review-${review.id}` : `review-${review.id}`;
+    
+    const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+    const cleanText = sanitizeText(review.text, review.userName);
+    const cleanResponse = sanitizeText(review.ownerResponse);
+
+    card.innerHTML = `
+        <div class="card-header">
+            <div class="user-info">
+                <div class="user-avatar">${(review.userName || 'U').charAt(0).toUpperCase()}</div>
+                <div class="user-details">
+                    <span class="user-name">${review.userName || 'Utente Google'}</span>
+                    <span class="review-date">${review.relativeTime || ''}</span>
+                </div>
+            </div>
+            <div class="card-top-right">
+                <div class="rating-stars">${stars}</div>
+                <button class="copy-review-btn" onclick="copyReviewToClipboard('${review.id}', ${isReadMode})" title="Copia testo">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
+            </div>
+        </div>
+        <div class="review-text">${cleanText || '<span class="no-text">Nessun commento testuale.</span>'}</div>
+        ${cleanResponse ? `
+            <div class="owner-response">
+                <span class="response-label">Risposta del proprietario</span>
+                <p>${cleanResponse}</p>
+            </div>
+        ` : ''}
+    `;
+    
+    return card;
+}
+
+// Global scope for onclick
+window.copyReviewToClipboard = async (id, isReadMode = false) => {
+    const reviewsList = isReadMode ? readReviews : reviews;
+    const review = reviewsList.find(r => r.id === id);
+    if (!review) return;
+    
+    const textToCopy = `Recensione di ${review.userName} (${review.rating} stelle):\n${sanitizeText(review.text, review.userName)}`;
+    
+    try {
+        await navigator.clipboard.writeText(textToCopy);
+        const prefix = isReadMode ? 'read-review-' : 'review-';
+        const btn = document.querySelector(`#${prefix}${id} .copy-review-btn`);
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        btn.classList.add('copied');
+        
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+            btn.classList.remove('copied');
+        }, 2000);
+    } catch (err) {
+        console.error('Failed to copy: ', err);
+    }
+};
 
 function updateProgress(percent) {
     progressBar.style.width = `${percent}%`;

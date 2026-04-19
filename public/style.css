@@ -572,11 +572,6 @@ footer {
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 
-.review-card.minimal {
-    padding: 16px 20px;
-    min-height: auto;
-}
-
 @keyframes cardEntrance {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -587,11 +582,6 @@ footer {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
-}
-
-.card-header.minimal {
-    margin-bottom: 8px;
-    justify-content: flex-end;
 }
 
 .user-info {

@@ -268,9 +268,13 @@ async function run(url, depth, logCallback, stopSignal) {
             }
             
             // 7. Extract Owner Response
-            const ownerResponse = await el.locator('.C7rEae, .m778B, .wiI7cb').nth(1).innerText().catch(() => null);
+            let ownerResponse = await el.locator('.C7rEae, .m778B, .wiI7cb').nth(1).innerText().catch(() => null);
 
             if (!text && !userName) continue; 
+
+            // Clean up extracted fields
+            text = cleanText(text, userName);
+            ownerResponse = cleanText(ownerResponse);
 
             const data = { id, userName, rating, relativeTime, text, ownerResponse };
             reviews.push(data);
@@ -356,6 +360,50 @@ async function run(url, depth, logCallback, stopSignal) {
         // Already closed
     }
   }
+}
+
+/**
+ * Clean up scraped text to remove UI artifacts
+ */
+function cleanText(text, userName = '') {
+  if (!text) return '';
+  let clean = text;
+
+  // 1. Remove Private Use Area characters (Google icons like stars, menu, etc.)
+  clean = clean.replace(/[\uE000-\uF8FF]/g, '');
+
+  // 2. Remove literal brackets noise
+  clean = clean.replace(/\[\]/g, '');
+
+  // 3. Remove "Like" and "Share" words at the end or separated by newlines
+  clean = clean.replace(/\n+(Like|Share|Mi piace|Condividi)(\s*(Like|Share|Mi piace|Condividi))*\s*$/gi, '');
+
+  // 4. Remove owner response artifacts if leaked into main text
+  clean = clean.replace(/\n*Response from the owner.*$/is, '');
+  clean = clean.replace(/\n*Risposta (dal|del) proprietario.*$/is, '');
+
+  // 5. Handle the metadata header (Name, Local Guide stats, Date) if we grabbed too much
+  if (clean.includes('Local Guide')) {
+    const datePattern = /(?:\d+\s+)?(?:month|year|week|day|hour|minute|mese|anno|settimana|giorno|ora|minuto)s?\s+(?:ago|fa)/i;
+    const match = clean.match(datePattern);
+    if (match) {
+      const index = clean.indexOf(match[0]) + match[0].length;
+      const possibleText = clean.substring(index).trim();
+      if (possibleText.length > 5) clean = possibleText;
+    }
+  }
+
+  // 6. Remove the username if it appears at the very beginning
+  if (userName && clean.toLowerCase().startsWith(userName.toLowerCase())) {
+    clean = clean.substring(userName.length).trim();
+    clean = clean.replace(/^[ \n\r·•]+/, ''); 
+  }
+
+  // 7. Normalize newlines
+  clean = clean.replace(/\r/g, '');
+  clean = clean.replace(/\n{3,}/g, '\n\n');
+
+  return clean.trim();
 }
 
 async function saveIncremental(name, data) {

@@ -1,5 +1,14 @@
 # DOCUMENTATION
 
+## [2026-04-19 21:45]: Advanced Noise Reduction & Deep Sanitization
+*Details*: Implemented a robust system to strip noise and UI artifacts from review text, specifically targeting "Like", "Share", "Local Guide" metadata, and character noise.
+*Tech Notes*:
+- **Character Cleaning**: Added logic to remove Private Use Area characters (E000-F8FF) which Google uses for icons (stars, menus, etc.) that often leaked as "blocks" or "squares".
+- **Metadata Stripping**: Implemented a regex-based header detector that identifies "Local Guide" blocks and automatically finds the start of the actual content using date patterns (e.g., "6 months ago").
+- **UI Element Filtering**: Specifically targeted "Like", "Share", "Mi piace", and "Condividi" text fragments that appear when the scraper captures the entire review container.
+- **Artifact Removal**: Eliminated literal brackets `[]` and normalized excessive newlines `\n` to a maximum of two consecutive breaks for better readability.
+- **Cross-Layer Implementation**: Applied the same logic both to the **Frontend Reader** (for existing JSON files) and the **Backend Scraper** (for clean data storage).
+
 ## [2026-04-19 21:35]: Documentation Update with Dual-Mode Visuals
 *Details*: Updated the project documentation to include screenshots of the new Dual-Mode system (Extract vs. Read).
 *Tech Notes*:
@@ -139,13 +148,6 @@
 - **Dependencies**: `playwright`, `playwright-extra`, `puppeteer-extra-plugin-stealth`, `socket.io`, `fs-extra`, `express`.
 - **Key Features**: Auto-cookie consent, lazy-loading scroll loop, incremental backups, real-time WebSocket logs, JSON download.
 
-## [2026-04-19 21:40]: Minimalist Read Mode & Enhanced Noise Control
-*Details*: Implemented a ultra-minimalist view for the "Read Mode" (file viewer) and improved the text cleaning engine to remove scraping artifacts.
-*Tech Notes*:
-- **UI Simplification**: In Read Mode, review cards now hide the user avatar, name, date, and rating stars, showing *only* the review text and the action button, as per user request.
-- **Multilingual Sanitization**: Expanded `sanitizeText` to detect and strip "Like", "Share", "Mi piace", "Condividi", "Me gusta", and "J'aime" buttons that often leak into the scraped text.
-- **Improved UX**: Added a dedicated `.minimal` CSS class for higher information density in the vault viewer.
-
 ### Project Structure:
 - `server.js`: Main Express/Socket.io entry point.
 - `scraper.js`: Playwright logic for navigating and extracting reviews.
@@ -154,7 +156,7 @@
 
 ### Current Status:
 - [x] **Vault Reader**: Offline JSON reader implemented.
-- [x] **Minimal Read Mode**: Header metadata now hidden in reader files.
-- [x] **Advanced Sanitization**: Multi-language noise removal active.
-- [ ] **Data Export Refinement**: Consider filtering buttons at the scraper level (Node.js) as well.
-
+- [x] **Robust Scraper Update**: Added support for Google Search Knowledge Panels and role-based selectors.
+- [x] **Reliability & Redirect Fix**: Added handling for shortened `maps.app.goo.gl` redirects and fixed empty field extraction.
+- [x] **Infinite Restart Fix**: Configured nodemon to ignore the `data/` directory.
+- [x] **Browser Closure Handling**: Implementata la gestione graziosa della chiusura manuale della finestra del browser.

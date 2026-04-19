@@ -572,6 +572,11 @@ footer {
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 
+.review-card.minimal {
+    padding: 16px 20px;
+    min-height: auto;
+}
+
 @keyframes cardEntrance {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -582,6 +587,11 @@ footer {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
+}
+
+.card-header.minimal {
+    margin-bottom: 8px;
+    justify-content: flex-end;
 }
 
 .user-info {
@@ -687,22 +697,29 @@ footer {
 }
 
 .owner-response {
-    margin-top: 16px;
-    padding: 16px;
-    background: rgba(99, 102, 241, 0.05);
-    border-left: 3px solid var(--primary);
-    border-radius: 4px 16px 16px 4px;
+    margin-top: 20px;
+    padding: 18px;
+    background: rgba(34, 211, 238, 0.08); /* Using var(--accent) with opacity */
+    border-left: 4px solid var(--accent);
+    border-radius: 8px 20px 20px 8px;
     font-size: 0.85rem;
+    position: relative;
+    animation: slideInLeft 0.5s ease-out;
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
 }
 
 .response-label {
     display: block;
-    font-weight: 700;
-    font-size: 0.7rem;
+    font-weight: 800;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    color: var(--primary);
-    margin-bottom: 6px;
-    letter-spacing: 0.5px;
+    color: var(--accent);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
 }
 
 /* Drop Zone */
@@ -887,7 +904,8 @@ footer {
 }
 
 .modal-content .owner-response {
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(34, 211, 238, 0.12);
+    border-left-width: 5px;
     padding: 24px;
     font-size: 1rem;
 }

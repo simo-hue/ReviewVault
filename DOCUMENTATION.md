@@ -1,5 +1,19 @@
 # DOCUMENTATION
 
+## [2026-04-19 21:35]: Documentation Update with Dual-Mode Visuals
+*Details*: Updated the project documentation to include screenshots of the new Dual-Mode system (Extract vs. Read).
+*Tech Notes*:
+- **Assets**: Integrated `mode_extract.png` and `mode_read.png` into the feature documentation.
+- **Markdown**: Added side-by-side comparison tables for better feature visualization.
+
+## [2026-04-19 21:30]: Visual Differentiation of Owner Responses
+*Details*: Improved the visual hierarchy of review cards by giving the owner's response a distinct style and color scheme.
+*Tech Notes*:
+- **Color Coding**: Switched owner responses from the primary indigo theme to a vibrant cyan (`var(--accent)`) theme.
+- **Micro-Animations**: Added a subtle `slideInLeft` entrance animation for the response box to draw attention to the business interaction.
+- **Enhanced Contrast**: Increased border thickness and background opacity for better separation between the customer review and the business reply.
+- **Modal Consistency**: Applied matching style updates to the detailed modal view for a unified experience.
+
 ## [2026-04-19 21:26]: Interactive Review Modal (Detailed View)
 *Details*: Implemented a beautiful detailed view for every review card. Users can now click on any review to open a focused, glassmorphism modal for an improved reading experience.
 *Tech Notes*:
@@ -20,6 +34,12 @@
 
 ## [2026-04-19 21:28]: Dual-Mode "ReviewVault" System (Extract & Read)
 *Details*: Re-architected the main application into a dual-mode system. Users can now switch between "Estrai" (Real-time Scraping) and "Leggi" (Offline Vault Reader). The reader allows users to visualize previously exported JSON files using the same premium interface.
+
+| **Modalità Estrazione** | **Modalità Lettura (Caveau)** |
+|:---:|:---:|
+| ![Mode Extract](docs/images/mode_extract.png) | ![Mode Read](docs/images/mode_read.png) |
+| *Interfaccia di scraping in tempo reale* | *Visualizzatore offline di file JSON* |
+
 *Tech Notes*:
 - **App Switching**: Implemented a high-level mode navigator using a segmented button layout with smooth section transitions.
 - **Vault Reader**: 
@@ -119,6 +139,13 @@
 - **Dependencies**: `playwright`, `playwright-extra`, `puppeteer-extra-plugin-stealth`, `socket.io`, `fs-extra`, `express`.
 - **Key Features**: Auto-cookie consent, lazy-loading scroll loop, incremental backups, real-time WebSocket logs, JSON download.
 
+## [2026-04-19 21:40]: Minimalist Read Mode & Enhanced Noise Control
+*Details*: Implemented a ultra-minimalist view for the "Read Mode" (file viewer) and improved the text cleaning engine to remove scraping artifacts.
+*Tech Notes*:
+- **UI Simplification**: In Read Mode, review cards now hide the user avatar, name, date, and rating stars, showing *only* the review text and the action button, as per user request.
+- **Multilingual Sanitization**: Expanded `sanitizeText` to detect and strip "Like", "Share", "Mi piace", "Condividi", "Me gusta", and "J'aime" buttons that often leak into the scraped text.
+- **Improved UX**: Added a dedicated `.minimal` CSS class for higher information density in the vault viewer.
+
 ### Project Structure:
 - `server.js`: Main Express/Socket.io entry point.
 - `scraper.js`: Playwright logic for navigating and extracting reviews.
@@ -127,7 +154,7 @@
 
 ### Current Status:
 - [x] **Vault Reader**: Offline JSON reader implemented.
-- [x] **Robust Scraper Update**: Added support for Google Search Knowledge Panels and role-based selectors.
-- [x] **Reliability & Redirect Fix**: Added handling for shortened `maps.app.goo.gl` redirects and fixed empty field extraction.
-- [x] **Infinite Restart Fix**: Configured nodemon to ignore the `data/` directory.
-- [x] **Browser Closure Handling**: Implementata la gestione graziosa della chiusura manuale della finestra del browser.
+- [x] **Minimal Read Mode**: Header metadata now hidden in reader files.
+- [x] **Advanced Sanitization**: Multi-language noise removal active.
+- [ ] **Data Export Refinement**: Consider filtering buttons at the scraper level (Node.js) as well.
+

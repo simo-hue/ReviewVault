@@ -28,6 +28,17 @@ Once the extraction is complete, ReviewVault notifies the user and provides a cl
 
 ---
 
+### 🔄 Dual-Mode Architecture: Extract & Read
+
+ReviewVault is now a comprehensive review management system. Switch seamlessly between real-time data collection and offline analysis:
+
+| **Mode: Estrai (Live)** | **Mode: Leggi (Vault Reader)** |
+|:---:|:---:|
+| ![Mode Extract](docs/images/mode_extract.png) | ![Mode Read](docs/images/mode_read.png) |
+| *Scrape new reviews in real-time* | *Load and visualize your archived .json vaults* |
+
+---
+
 ## 🚀 Key Features
 
 - **🌐 Smart URL Resolution**: Full support for shortened `maps.app.goo.gl` links and automatic redirection handling.

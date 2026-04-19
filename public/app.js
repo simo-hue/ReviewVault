@@ -302,19 +302,36 @@ function sanitizeText(text, userName = null) {
         clean = clean.replace(/^[ \n\r·•]+/, ''); 
     }
 
+    // 2. Remove "Like", "Share" and other buttons text if they leaked in (Multi-language)
+    const noisePatterns = [
+        /\n\nLike\n\nShare.*$/is,
+        /\n\nMi piace\n\nCondividi.*$/is,
+        /\n\nMe gusta\n\nCompartir.*$/is,
+        /\n\nJ'aime\n\nPartager.*$/is,
+        /\n\nLike\s*$/i,
+        /\n\nMi piace\s*$/i,
+        /More\s*$/i,
+        /Altro\s*$/i,
+        /·\s*$/
+    ];
+
+    noisePatterns.forEach(pattern => {
+        clean = clean.replace(pattern, '');
+    });
+
+    // 3. Remove "Local Guide" artifacts
     if (clean.includes('\nLocal Guide')) {
         const parts = clean.split(/\n{3,}/); // Split by 3 or more newlines
         if (parts.length > 1) {
-            // Find the longest part which is likely the actual review
+            // Find the longest part which is likely the actual review text
             clean = parts.reduce((a, b) => a.length > b.length ? a : b, '');
+        } else {
+            // Fallback: remove the specific line
+            clean = clean.replace(/.*\nLocal Guide.*\n?/, '');
         }
     }
     
-    // Remove "Like", "Share" and other buttons text if they leaked in
-    clean = clean.replace(/\n\nLike\n\nShare.*$/s, '');
-    clean = clean.replace(/More\s*$/i, '');
-    
-    // 2. Remove unprintable/control characters (the "squares")
+    // 4. Remove unprintable/control characters (the "squares")
     clean = clean.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFFFD]/g, '');
     
     return clean.trim();
@@ -347,13 +364,23 @@ function addReview(review) {
 function createReviewCard(review, isReadMode = false, allowExpand = true) {
     const card = document.createElement('div');
     card.className = 'review-card';
+    if (isReadMode) card.classList.add('minimal');
     card.id = isReadMode ? `read-review-${review.id}` : `review-${review.id}`;
     
     const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
     const cleanText = sanitizeText(review.text, review.userName);
     const cleanResponse = sanitizeText(review.ownerResponse);
 
-    card.innerHTML = `
+    // If it's Read Mode and the user only wants the text, we simplify the header significantly
+    const headerHtml = isReadMode ? `
+        <div class="card-header minimal">
+            <div class="card-top-right">
+                <button class="copy-review-btn" onclick="event.stopPropagation(); copyReviewToClipboard('${review.id}', ${isReadMode})" title="Copia testo">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
+            </div>
+        </div>
+    ` : `
         <div class="card-header">
             <div class="user-info">
                 <div class="user-avatar">${(review.userName || 'U').charAt(0).toUpperCase()}</div>
@@ -369,6 +396,10 @@ function createReviewCard(review, isReadMode = false, allowExpand = true) {
                 </button>
             </div>
         </div>
+    `;
+
+    card.innerHTML = `
+        ${headerHtml}
         <div class="review-text">${cleanText || '<span class="no-text">Nessun commento testuale.</span>'}</div>
         ${cleanResponse ? `
             <div class="owner-response">

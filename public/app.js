@@ -33,6 +33,12 @@ const readBusinessName = document.getElementById('read-business-name');
 const readStatsBadge = document.getElementById('read-stats-badge');
 const closeReadBtn = document.getElementById('close-read-btn');
 
+// Modal Elements
+const reviewModal = document.getElementById('review-modal');
+const modalContent = document.getElementById('modal-content');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+const modalOverlay = reviewModal.querySelector('.modal-overlay');
+
 let isRunning = false;
 let reviews = [];
 let readReviews = [];
@@ -250,6 +256,30 @@ function processReadData(data, fileName) {
     readViewerContainer.classList.remove('hidden');
 }
 
+// Modal Logic
+function openReviewModal(review) {
+    modalContent.innerHTML = '';
+    const cardBody = createReviewCard(review, false, false);
+    modalContent.appendChild(cardBody);
+    reviewModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent background scroll
+}
+
+function closeReviewModal() {
+    reviewModal.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+modalCloseBtn.addEventListener('click', closeReviewModal);
+modalOverlay.addEventListener('click', closeReviewModal);
+
+// Close on Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !reviewModal.classList.contains('hidden')) {
+        closeReviewModal();
+    }
+});
+
 function renderReadReviews(reviewsList) {
     readViewer.innerHTML = '';
     reviewsList.forEach(review => {
@@ -314,7 +344,7 @@ function addReview(review) {
     reviewViewer.prepend(card);
 }
 
-function createReviewCard(review, isReadMode = false) {
+function createReviewCard(review, isReadMode = false, allowExpand = true) {
     const card = document.createElement('div');
     card.className = 'review-card';
     card.id = isReadMode ? `read-review-${review.id}` : `review-${review.id}`;
@@ -334,7 +364,7 @@ function createReviewCard(review, isReadMode = false) {
             </div>
             <div class="card-top-right">
                 <div class="rating-stars">${stars}</div>
-                <button class="copy-review-btn" onclick="copyReviewToClipboard('${review.id}', ${isReadMode})" title="Copia testo">
+                <button class="copy-review-btn" onclick="event.stopPropagation(); copyReviewToClipboard('${review.id}', ${isReadMode})" title="Copia testo">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                 </button>
             </div>
@@ -347,6 +377,10 @@ function createReviewCard(review, isReadMode = false) {
             </div>
         ` : ''}
     `;
+
+    if (allowExpand) {
+        card.addEventListener('click', () => openReviewModal(review));
+    }
     
     return card;
 }

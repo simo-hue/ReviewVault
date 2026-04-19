@@ -1,5 +1,23 @@
 # DOCUMENTATION
 
+## [2026-04-19 21:26]: Interactive Review Modal (Detailed View)
+*Details*: Implemented a beautiful detailed view for every review card. Users can now click on any review to open a focused, glassmorphism modal for an improved reading experience.
+*Tech Notes*:
+- **Modal Engine**: Developed a reusable Modal UI with smooth scale and fade transitions.
+- **Clickable Interface**: Transformed standard cards into interactive elements with `cursor: pointer` and hover states.
+- **Event Management**: Implemented smart event bubbling control to ensure "Copy to Clipboard" remains functional without triggering the modal.
+- **UX Refinements**: 
+    - Added background scrolling lock when the modal is active.
+    - Implemented keyboard support (ESC key) to close the modal.
+    - Enhanced typography and spacing inside the detailed view for better legibility of long reviews.
+
+## [2026-04-19 21:23]: Review Text Noise Reduction
+*Details*: Fixed a UI bug where the user name was being displayed twice (once in the header and once in the review body).
+*Tech Notes*:
+- **Smart Sanitization**: Updated `sanitizeText` to accept a `userName` context. It now automatically detects if the scraped review text starts with the user's name (a common Playwright artifact) and strips it elegantly.
+- **Improved Body Content**: Ensured the review body contains *only* the user's comments, improving readability and professional appearance.
+- **Copy Accuracy**: The "Copy to Clipboard" functionality now also uses the cleaned text, providing a better result when pasting.
+
 ## [2026-04-19 21:28]: Dual-Mode "ReviewVault" System (Extract & Read)
 *Details*: Re-architected the main application into a dual-mode system. Users can now switch between "Estrai" (Real-time Scraping) and "Leggi" (Offline Vault Reader). The reader allows users to visualize previously exported JSON files using the same premium interface.
 *Tech Notes*:

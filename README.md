@@ -17,6 +17,17 @@ ReviewVault provides absolute transparency during the extraction process with a 
 
 ---
 
+### 💾 Data Export & Secure Archiving
+
+Once the extraction is complete, ReviewVault notifies the user and provides a clean, professional download interface:
+
+| **Task Completion Notification** | **Secure Export (.json)** |
+|:---:|:---:|
+| ![Task Complete](docs/images/task_complete.png) | ![Download Button](docs/images/download_button.png) |
+| *Clear confirmation of data collection* | *Instant access to your digital vault* |
+
+---
+
 ## 🚀 Key Features
 
 - **🌐 Smart URL Resolution**: Full support for shortened `maps.app.goo.gl` links and automatic redirection handling.

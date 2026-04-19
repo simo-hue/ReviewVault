@@ -1,5 +1,11 @@
 # DOCUMENTATION
 
+## [2026-04-19 21:48]: Modal UI Overlap & Context Bug Fix
+*Details*: Fixed a UI collision where the modal close button overlapped with the review card's copy button. Also resolved a logic bug where the modal did not respect "Read Mode" (offline) context.
+*Tech Notes*:
+- **UI Refinement**: Increased `padding-top` to `80px` in `.modal-container` to provide dedicated space for the absolute-positioned close button.
+- **Context Awareness**: Updated `openReviewModal` and `createReviewCard` to pass and respect the `isReadMode` flag, ensuring the "Copy to Clipboard" feature works correctly when viewing offline JSON files in the detailed modal view.
+
 ## [2026-04-19 21:45]: Advanced Noise Reduction & Deep Sanitization
 *Details*: Implemented a robust system to strip noise and UI artifacts from review text, specifically targeting "Like", "Share", "Local Guide" metadata, and character noise.
 *Tech Notes*:

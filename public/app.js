@@ -257,9 +257,9 @@ function processReadData(data, fileName) {
 }
 
 // Modal Logic
-function openReviewModal(review) {
+function openReviewModal(review, isReadMode = false) {
     modalContent.innerHTML = '';
-    const cardBody = createReviewCard(review, false, false);
+    const cardBody = createReviewCard(review, isReadMode, false);
     modalContent.appendChild(cardBody);
     reviewModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden'; // Prevent background scroll
@@ -402,7 +402,7 @@ function createReviewCard(review, isReadMode = false, allowExpand = true) {
     `;
 
     if (allowExpand) {
-        card.addEventListener('click', () => openReviewModal(review));
+        card.addEventListener('click', () => openReviewModal(review, isReadMode));
     }
     
     return card;

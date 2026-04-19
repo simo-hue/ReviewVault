@@ -1,6 +1,20 @@
 # DOCUMENTATION
 
+## [2026-04-19 20:47]: Enhanced Documentation with Monitoring Details
+*Details*: Added a dedicated section in README.md for real-time monitoring, featuring screenshots of the logging system and status bar.
+*Tech Notes*:
+- **Assets**: Added `logging_system.png` and `status_bar.png` to `docs/images/`.
+- **UI/UX Showcase**: Highlighted the transparency of the extraction process using a grid-style layout in the documentation.
+
+## [2026-04-19 20:44]: License Implementation
+
+*Details*: Added the MIT License file and updated the README link.
+*Tech Notes*:
+- **Legal**: Created `LICENSE` file with 2026 copyright for "Simo".
+- **Documentation**: Linked the license section in `README.md` to the local file.
+
 ## [2026-04-19 20:41]: Implementation of Live Screenshot
+
 *Details*: Replaced the AI-generated mockup with an actual screenshot of the application in action.
 *Tech Notes*:
 - **Assets**: Created `docs/images/` directory to store project media.

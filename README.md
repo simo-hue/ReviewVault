@@ -6,6 +6,17 @@
 
 ---
 
+### 🔍 Real-Time Monitoring & Feedback
+
+ReviewVault provides absolute transparency during the extraction process with a dedicated live feedback system:
+
+| **Terminal Logging System** | **Progress & Status Bar** |
+|:---:|:---:|
+| ![Logging System](docs/images/logging_system.png) | ![Status Bar](docs/images/status_bar.png) |
+| *Deep-level logs tracking every action* | *Visual progress and state indicators* |
+
+---
+
 ## 🚀 Key Features
 
 - **🌐 Smart URL Resolution**: Full support for shortened `maps.app.goo.gl` links and automatic redirection handling.
@@ -90,7 +101,7 @@ Try the scraper with this example activity:
 
 ## 📜 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 ---
 *Developed for excellence in data extraction. © 2026 ReviewVault.*

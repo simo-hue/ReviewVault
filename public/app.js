@@ -32,7 +32,7 @@ socket.on('finished', (data) => {
     toggleLoading(false);
     
     if (data.success) {
-        statusBadge.textContent = data.stopped ? 'Interrotto' : 'Completato';
+        statusBadge.textContent = data.stopped ? 'Interrotto' : 'Archiviato';
         statusBadge.className = data.stopped ? 'badge warn' : 'badge done';
         
         if (!data.stopped) updateProgress(100);
@@ -42,13 +42,13 @@ socket.on('finished', (data) => {
         downloadBtn.href = `/download/${data.fileName}`;
         
         const msg = data.stopped 
-            ? `Processo interrotto. ${data.count} recensioni salvate.`
-            : `Processo terminato! ${data.count} recensioni salvate.`;
+            ? `Estrazione interrotta. ${data.count} recensioni archiviate nel caveau.`
+            : `Estrazione completata! ${data.count} recensioni archiviate nel caveau.`;
         addLog(msg, data.stopped ? 'warn' : 'success');
     } else {
         statusBadge.textContent = 'Errore';
         statusBadge.className = 'badge error';
-        addLog(`Errore critico: ${data.error}`, 'error');
+        addLog(`Errore nel caveau: ${data.error}`, 'error');
     }
 });
 
@@ -102,10 +102,10 @@ startBtn.addEventListener('click', () => {
     updateProgress(0);
     toggleLoading(true);
     
-    statusBadge.textContent = 'In esecuzione';
+    statusBadge.textContent = 'In estrazione';
     statusBadge.className = 'badge running';
     
-    addLog('Avvio della sessione di scraping...', 'system');
+    addLog('Apertura caveau digitale e avvio estrazione...', 'system');
     
     // Emit start event
     socket.emit('start-scraping', { url, depth });
@@ -114,10 +114,10 @@ startBtn.addEventListener('click', () => {
 stopBtn.addEventListener('click', () => {
     if (!isRunning) return;
     
-    addLog('Richiesta di interruzione inviata...', 'warn');
+    addLog('Richiesta di chiusura caveau inviata...', 'warn');
     socket.emit('stop-scraping');
     stopBtn.disabled = true;
-    stopBtn.textContent = 'Arresto in corso...';
+    stopBtn.innerHTML = '<span>Chiusura in corso...</span>';
 });
 
 // Helper Functions
@@ -139,16 +139,16 @@ function updateProgress(percent) {
 function toggleLoading(loading) {
     if (loading) {
         btnLoader.classList.remove('hidden');
-        btnText.textContent = 'Scraping in corso...';
+        btnText.textContent = 'Estrazione in corso...';
         startBtn.disabled = true;
         
         stopBtn.classList.remove('hidden');
         stopBtn.disabled = false;
-        stopBtn.textContent = 'Ferma Scraping';
+        stopBtn.innerHTML = '<span>Ferma Processo</span>';
         startBtn.classList.add('hidden');
     } else {
         btnLoader.classList.add('hidden');
-        btnText.textContent = 'Avvia Scraping';
+        btnText.textContent = 'Inizia Estrazione';
         startBtn.disabled = false;
         
         stopBtn.classList.add('hidden');

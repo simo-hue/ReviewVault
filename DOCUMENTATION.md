@@ -1,5 +1,23 @@
 # DOCUMENTATION
 
+## [2026-04-19 20:36]: Desktop Responsiveness & dynamic scaling
+*Details*: Optimized the layout to adapt to desktop viewport height and width.
+*Tech Notes*:
+- **Flexbox Architecture**: Refactored the main container into a flexbox layout to allow components to scale based on available space.
+- **Dynamic Console**: The console log now expands dynamically to fill vertical viewport space using `flex: 1`, ensuring optimal visibility on different screen sizes.
+- **Viewport Constraints**: Added `max-height` and `vh` constraints to the main container to prevent clipping and unnecessary body scrolling.
+- **Spacing Optimization**: Refined paddings and margins for better balance on wide and narrow desktop screens.
+
+
+## [2026-04-19 20:34]: ReviewVault Premium Redesign & Branding
+*Details*: Rebranded the application from "MapsScraper" to "ReviewVault" with a high-end, modern aesthetic.
+*Tech Notes*:
+- **Branding**: New name, logo (🛡️), and "Vault/Caveau" terminology integrated across the UI.
+- **Visuals**: Implemented a "Cyber Navy & Electric Cyan" palette with mesh background gradients and advanced glassmorphism (blur: 20px).
+- **UX**: Added entrance animations, micro-interactions for buttons, and a polished terminal-style console with glowing status indicators.
+- **Refinement**: Improved input responsiveness and progress bar aesthetics with glowing effects.
+
+
 ## [2026-04-19 19:15]: Google Maps Review Scraper - Initial Implementation
 *Details*: Created a local self-hosted web app to scrape Google Maps reviews.
 *Tech Notes*:

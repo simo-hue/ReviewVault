@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>G-Maps Review Scraper | Premium Edition</title>
+    <title>ReviewVault | Premium Review Scraper</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,22 +15,22 @@
     <div class="container">
         <header>
             <div class="logo">
-                <span class="icon">📍</span>
-                <h1>Maps<span>Scraper</span></h1>
+                <span class="icon">🛡️</span>
+                <h1>Review<span>Vault</span></h1>
             </div>
-            <p>Estrai recensioni Google Maps in un click.</p>
+            <p>Il tuo caveau digitale per le recensioni Google Maps.</p>
         </header>
 
         <main>
             <section class="controls">
                 <div class="input-group">
-                    <label for="url">URL Google Maps</label>
-                    <input type="text" id="url" placeholder="Incolla qui l'URL dell'attività..." autocomplete="off">
+                    <label for="url">URL Business Google Maps</label>
+                    <input type="text" id="url" placeholder="Incolla l'URL dell'attività..." autocomplete="off">
                 </div>
 
                 <div class="row">
                     <div class="input-group">
-                        <label for="depth">Profondità (Max Recensioni)</label>
+                        <label for="depth">Profondità Estrazione</label>
                         <select id="depth">
                             <option value="5">5 recensioni</option>
                             <option value="50">50 recensioni</option>
@@ -44,19 +44,19 @@
                     </div>
 
                     <button id="start-btn" class="primary-btn">
-                        <span>Avvia Scraping</span>
+                        <span>Inizia Estrazione</span>
                         <div class="loader-inner hidden"></div>
                     </button>
                     <button id="stop-btn" class="secondary-btn hidden">
-                        <span>Ferma Scraping</span>
+                        <span>Ferma Processo</span>
                     </button>
                 </div>
             </section>
 
             <section class="status-container">
                 <div class="status-header">
-                    <h3>Console di Monitoraggio</h3>
-                    <div id="status-badge" class="badge idle">In attesa</div>
+                    <h3>Console di Estrazione</h3>
+                    <div id="status-badge" class="badge idle">Standby</div>
                 </div>
                 
                 <div class="progress-bar-container">
@@ -64,15 +64,15 @@
                 </div>
 
                 <div id="console-log" class="console-log">
-                    <div class="log-entry system">Inizializzazione sistema... pronto.</div>
+                    <div class="log-entry system">ReviewVault inizializzato... pronto all'estrazione.</div>
                 </div>
 
                 <div id="result-actions" class="result-actions hidden">
                     <div class="stats">
-                        <span id="finish-count">0</span> recensioni trovate.
+                        <span id="finish-count">0</span> recensioni archiviate.
                     </div>
                     <a id="download-btn" href="#" class="download-btn">
-                        <span>Scarica JSON</span>
+                        <span>Scarica Caveau (.json)</span>
                         <i class="download-icon">⬇️</i>
                     </a>
                 </div>
@@ -80,7 +80,7 @@
         </main>
 
         <footer>
-            <p>&copy; 2026 G-Maps Scraper Tool | Powered by Playwright & Socket.io</p>
+            <p>&copy; 2026 ReviewVault | Premium Extraction Technology</p>
         </footer>
     </div>
 

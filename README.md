@@ -1,6 +1,6 @@
 # 🛡️ ReviewVault: Premium Google Maps Review Scraper
 
-![ReviewVault Demo](/Users/simo/.gemini/antigravity/brain/f966e074-292e-475e-8e91-9bcb8193f0bb/reviewvault_demo_1776623864960.png)
+![ReviewVault Screenshot](docs/images/app_screenshot.png)
 
 **ReviewVault** is a high-performance, self-hosted web application designed to extract and archive Google Maps reviews with surgical precision. Featuring a state-of-the-art "Cyber Navy" interface and built on a robust extraction engine, it transforms public review data into structured JSON files ready for analysis.
 

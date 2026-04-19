@@ -1,6 +1,13 @@
 # DOCUMENTATION
 
+## [2026-04-19 20:41]: Implementation of Live Screenshot
+*Details*: Replaced the AI-generated mockup with an actual screenshot of the application in action.
+*Tech Notes*:
+- **Assets**: Created `docs/images/` directory to store project media.
+- **Portability**: Updated `README.md` to use relative paths for images, ensuring they render correctly on platforms like GitHub.
+
 ## [2026-04-19 20:38]: Professional Project Documentation
+
 *Details*: Created a comprehensive, professional English README.md with high-quality demo screenshots.
 *Tech Notes*:
 - **Aesthetics**: Integrated custom-generated professional mockups to showcase the "ReviewVault" brand.

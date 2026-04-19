@@ -1,0 +1,3 @@
+1. https://maps.app.goo.gl/U8NvpizqYnwUf1U9A
+2. https://www.google.com/maps/place/Gelateria+Cento+per+Cento/@45.7659438,10.8056617,17z/data=!3m2!4b1!5s0x47821ea8ff1d81ab:0x8614e6a3b45d68e0!4m6!3m5!1s0x47821ea854e6b35d:0xe1fa887718510c94!8m2!3d45.7659401!4d10.8082366!16s%2Fg%2F11c1vm_d6r?entry=ttu&g_ep=EgoyMDI2MDQxNS4wIKXMDSoASAFQAw%3D%3D
+3. https://www.google.com/search?q=Gelateria+Cento+per+Cento&oq=Gelateria+Cento+per+Cento&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIGCAEQRRg7MgYIAhBFGDsyBggDEEUYOzIGCAQQRRg8MgYIBRBFGDwyBggGEEUYPNIBBzIzMWowajSoAgOwAgHxBa9bmwdjCYz9&sourceid=chrome&ie=UTF-8

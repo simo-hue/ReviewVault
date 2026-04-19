@@ -19,6 +19,8 @@ app.get('/', (req, res) => {
 });
 
 // WebSocket connection
+const activeScrapers = new Map();
+
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
@@ -30,6 +32,9 @@ io.on('connection', (socket) => {
       return;
     }
 
+    const stopSignal = { stopped: false };
+    activeScrapers.set(socket.id, stopSignal);
+
     try {
       socket.emit('log', { type: 'info', message: `Starting scrape for: ${url}` });
       socket.emit('log', { type: 'info', message: `Depth set to: ${depth}` });
@@ -37,22 +42,40 @@ io.on('connection', (socket) => {
       // Call the scraper function
       const result = await scraper.run(url, depth, (logData) => {
         socket.emit('log', logData);
-      });
+      }, stopSignal);
+
+      if (stopSignal.stopped) {
+          socket.emit('log', { type: 'warn', message: 'Scraping stopped by user.' });
+      }
 
       socket.emit('finished', { 
         success: true, 
         filePath: result.filePath,
         fileName: result.fileName,
-        count: result.count 
+        count: result.count,
+        stopped: stopSignal.stopped
       });
     } catch (error) {
       console.error('Scraping error:', error);
       socket.emit('log', { type: 'error', message: `Critical error: ${error.message}` });
       socket.emit('finished', { success: false, error: error.message });
+    } finally {
+      activeScrapers.delete(socket.id);
+    }
+  });
+
+  socket.on('stop-scraping', () => {
+    const signal = activeScrapers.get(socket.id);
+    if (signal) {
+      signal.stopped = true;
+      console.log(`Stopping scraper for socket ${socket.id}`);
     }
   });
 
   socket.on('disconnect', () => {
+    const signal = activeScrapers.get(socket.id);
+    if (signal) signal.stopped = true;
+    activeScrapers.delete(socket.id);
     console.log('Client disconnected:', socket.id);
   });
 });

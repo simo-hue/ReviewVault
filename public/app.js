@@ -3,7 +3,9 @@ const socket = io();
 // UI Elements
 const urlInput = document.getElementById('url');
 const depthSelect = document.getElementById('depth');
+const customDepthInput = document.getElementById('custom-depth-input');
 const startBtn = document.getElementById('start-btn');
+const stopBtn = document.getElementById('stop-btn');
 const consoleLog = document.getElementById('console-log');
 const statusBadge = document.getElementById('status-badge');
 const progressBar = document.getElementById('progress-bar');
@@ -21,7 +23,7 @@ socket.on('log', (data) => {
     
     if (data.type === 'progress') {
         const percent = Math.min((data.current / data.total) * 100, 100);
-        updateProgress(percent);
+        updateProgress(percent || 5); // Minimum 5% to show activity
     }
 });
 
@@ -30,27 +32,60 @@ socket.on('finished', (data) => {
     toggleLoading(false);
     
     if (data.success) {
-        statusBadge.textContent = 'Completato';
-        statusBadge.className = 'badge done';
-        updateProgress(100);
+        statusBadge.textContent = data.stopped ? 'Interrotto' : 'Completato';
+        statusBadge.className = data.stopped ? 'badge warn' : 'badge done';
         
-        // Show result actions
+        if (!data.stopped) updateProgress(100);
+        
         resultActions.classList.remove('hidden');
         finishCount.textContent = data.count;
         downloadBtn.href = `/download/${data.fileName}`;
         
-        addLog(`Processo terminato con successo. ${data.count} recensioni salvate.`, 'success');
+        const msg = data.stopped 
+            ? `Processo interrotto. ${data.count} recensioni salvate.`
+            : `Processo terminato! ${data.count} recensioni salvate.`;
+        addLog(msg, data.stopped ? 'warn' : 'success');
     } else {
         statusBadge.textContent = 'Errore';
         statusBadge.className = 'badge error';
-        addLog(`Errore: ${data.error}`, 'error');
+        addLog(`Errore critico: ${data.error}`, 'error');
+    }
+});
+
+socket.on('disconnect', () => {
+    if (isRunning) {
+        addLog('Connessione al server persa. Tentativo di riconnessione...', 'warn');
+    }
+});
+
+socket.on('connect', () => {
+    if (isRunning) {
+        addLog('Connessione ripristinata.', 'success');
     }
 });
 
 // Event Listeners
+depthSelect.addEventListener('change', () => {
+    if (depthSelect.value === 'custom') {
+        customDepthInput.classList.remove('hidden');
+    } else {
+        customDepthInput.classList.add('hidden');
+    }
+});
+
 startBtn.addEventListener('click', () => {
     const url = urlInput.value.trim();
-    const depth = depthSelect.value;
+    let depth = depthSelect.value;
+    
+    if (depth === 'custom') {
+        const customValue = customDepthInput.value.trim();
+        if (!customValue || isNaN(customValue) || parseInt(customValue) < 1) {
+            addLog('Inserisci un numero valido di recensioni.', 'error');
+            shakeElement(customDepthInput);
+            return;
+        }
+        depth = parseInt(customValue);
+    }
     
     if (!url) {
         addLog('Inserisci un URL valido di Google Maps.', 'error');
@@ -76,6 +111,15 @@ startBtn.addEventListener('click', () => {
     socket.emit('start-scraping', { url, depth });
 });
 
+stopBtn.addEventListener('click', () => {
+    if (!isRunning) return;
+    
+    addLog('Richiesta di interruzione inviata...', 'warn');
+    socket.emit('stop-scraping');
+    stopBtn.disabled = true;
+    stopBtn.textContent = 'Arresto in corso...';
+});
+
 // Helper Functions
 function addLog(message, type = 'info') {
     const entry = document.createElement('div');
@@ -97,10 +141,18 @@ function toggleLoading(loading) {
         btnLoader.classList.remove('hidden');
         btnText.textContent = 'Scraping in corso...';
         startBtn.disabled = true;
+        
+        stopBtn.classList.remove('hidden');
+        stopBtn.disabled = false;
+        stopBtn.textContent = 'Ferma Scraping';
+        startBtn.classList.add('hidden');
     } else {
         btnLoader.classList.add('hidden');
         btnText.textContent = 'Avvia Scraping';
         startBtn.disabled = false;
+        
+        stopBtn.classList.add('hidden');
+        startBtn.classList.remove('hidden');
     }
 }
 

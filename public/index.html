@@ -32,17 +32,23 @@
                     <div class="input-group">
                         <label for="depth">Profondità (Max Recensioni)</label>
                         <select id="depth">
+                            <option value="5">5 recensioni</option>
                             <option value="50">50 recensioni</option>
                             <option value="100">100 recensioni</option>
                             <option value="500">500 recensioni</option>
                             <option value="1000">1000 recensioni</option>
                             <option value="Tutte">Tutte (Attenzione!)</option>
+                            <option value="custom">Personalizzato...</option>
                         </select>
+                        <input type="number" id="custom-depth-input" class="hidden" placeholder="Inserisci numero..." min="1" step="1">
                     </div>
 
                     <button id="start-btn" class="primary-btn">
                         <span>Avvia Scraping</span>
                         <div class="loader-inner hidden"></div>
+                    </button>
+                    <button id="stop-btn" class="secondary-btn hidden">
+                        <span>Ferma Scraping</span>
                     </button>
                 </div>
             </section>

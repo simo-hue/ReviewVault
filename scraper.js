@@ -120,125 +120,129 @@ async function run(url, depth, logCallback, stopSignal) {
 
     logCallback({ type: 'info', message: 'Starting extraction phase...' });
 
-    for (let i = 0; i < maxScrollAttempts; i++) {
-      if (reviews.length >= maxReviews || stopSignal.stopped) break;
-
-      // Extract current reviews
-      const reviewElements = await page.locator('[data-review-id]').all();
-      
-      for (const el of reviewElements) {
+    try {
+      for (let i = 0; i < maxScrollAttempts; i++) {
         if (reviews.length >= maxReviews || stopSignal.stopped) break;
 
-        const id = await el.getAttribute('data-review-id');
-        if (reviews.find(r => r.id === id)) continue;
+        // Extract current reviews
+        const reviewElements = await page.locator('[data-review-id]').all();
+        
+        for (const el of reviewElements) {
+          if (reviews.length >= maxReviews || stopSignal.stopped) break;
 
-        try {
-          // 1. Expand "More" or "Altro" to get full text
-          const moreBtn = el.locator('button:has-text("Altro"), button:has-text("More"), [aria-label*="Altro"], [aria-label*="More"]').first();
-          if (await moreBtn.isVisible()) {
-              await moreBtn.click();
-              await page.waitForTimeout(600); // Give it time to expand
+          const id = await el.getAttribute('data-review-id');
+          if (reviews.find(r => r.id === id)) continue;
+
+          try {
+            // 1. Expand "More" or "Altro" to get full text
+            const moreBtn = el.locator('button:has-text("Altro"), button:has-text("More"), [aria-label*="Altro"], [aria-label*="More"]').first();
+            if (await moreBtn.isVisible()) {
+                await moreBtn.click();
+                await page.waitForTimeout(600); // Give it time to expand
+            }
+
+            // 2. Click "Show original" or "Mostra originale" to avoid auto-translation issues
+            const originalBtn = el.locator('button:has-text("Mostra originale"), button:has-text("Show original"), [aria-label*="originale"], [aria-label*="original"]').first();
+            if (await originalBtn.isVisible()) {
+                await originalBtn.click();
+                await page.waitForTimeout(600);
+            }
+            
+            if (stopSignal.stopped) break;
+
+            // 3. Extract User Name
+            const userName = await el.locator('.d4r55, .XE7CHf, span[style*="font-weight: 500"], .TSUbDb').first().innerText().catch(() => 'Anonymous');
+            
+            // 4. Extract Rating
+            const ratingElement = await el.locator('span[aria-label*="stell"], span[aria-label*="star"]').first();
+            const ratingLabel = await ratingElement.getAttribute('aria-label').catch(() => '0');
+            const rating = parseInt(ratingLabel) || 0;
+
+            // 5. Extract Relative Time (Date)
+            let relativeTime = await el.locator('.rsqaod, .PuaHbe, .dehXG, .xpcV0c').first().innerText().catch(() => '');
+            if (!relativeTime) {
+               relativeTime = await el.locator('span:has-text("fa"), span:has-text("ago")').first().innerText().catch(() => '');
+            }
+
+            // 6. Extract FULL Review Text (with fallbacks)
+            const textLocators = ['.wiI7cb', '.K7oB9b', '.MyTu7c', '.review-text', 'span.review-full-text'];
+            let text = '';
+            for (const selector of textLocators) {
+                const content = await el.locator(selector).first().innerText().catch(() => '');
+                if (content.trim()) {
+                    text = content.trim();
+                    break;
+                }
+            }
+
+            if (!text) {
+                text = await el.evaluate(node => {
+                    const items = node.querySelectorAll('span, div');
+                    let longest = '';
+                    for (const item of items) {
+                        const t = item.innerText || '';
+                        if (t.length > longest.length) longest = t;
+                    }
+                    return longest;
+                }).catch(() => '');
+            }
+            
+            // 7. Extract Owner Response
+            const ownerResponse = await el.locator('.C7rEae, .m778B, .wiI7cb').nth(1).innerText().catch(() => null);
+
+            if (!text && !userName) continue; 
+
+            const data = { id, userName, rating, relativeTime, text, ownerResponse };
+            reviews.push(data);
+            
+            logCallback({ 
+              type: 'progress', 
+              message: `Scraped ${reviews.length} reviews...`, 
+              current: reviews.length, 
+              total: maxReviews 
+            });
+
+            await saveIncremental(businessName, reviews);
+          } catch (err) {
+            if (err.message.includes('Target page, context or browser has been closed') || 
+                err.message.includes('browser has been closed')) {
+                throw err; // Re-throw to be caught by the outer loop catch
+            }
+            // Skip individual parsing errors
           }
+        }
 
-          // 2. Click "Show original" or "Mostra originale" to avoid auto-translation issues
-          const originalBtn = el.locator('button:has-text("Mostra originale"), button:has-text("Show original"), [aria-label*="originale"], [aria-label*="original"]').first();
-          if (await originalBtn.isVisible()) {
-              await originalBtn.click();
-              await page.waitForTimeout(600);
+        if (reviews.length >= maxReviews || stopSignal.stopped) break;
+
+        // Infinite Scroll Logic
+        if (scrollableElement) {
+          await scrollableElement.evaluate((el) => {
+              el.scrollBy(0, 1000);
+              return el.scrollTop;
+          }).catch(() => {});
+        } else {
+          await page.mouse.wheel(0, 2000).catch(() => {});
+        }
+        
+        await page.waitForTimeout(2000);
+
+        if (reviews.length === lastReviewCount) {
+          staleCount++;
+          if (staleCount > 10) {
+              logCallback({ type: 'info', message: 'No new reviews detected. Ending.' });
+              break;
           }
-          
-          if (stopSignal.stopped) break;
-
-          // 3. Extract User Name
-          const userName = await el.locator('.d4r55, .XE7CHf, span[style*="font-weight: 500"], .TSUbDb').first().innerText().catch(() => 'Anonymous');
-          
-          // 4. Extract Rating
-          const ratingElement = await el.locator('span[aria-label*="stell"], span[aria-label*="star"]').first();
-          const ratingLabel = await ratingElement.getAttribute('aria-label').catch(() => '0');
-          const rating = parseInt(ratingLabel) || 0;
-
-          // 5. Extract Relative Time (Date)
-          let relativeTime = await el.locator('.rsqaod, .PuaHbe, .dehXG, .xpcV0c').first().innerText().catch(() => '');
-          if (!relativeTime) {
-             relativeTime = await el.locator('span:has-text("fa"), span:has-text("ago")').first().innerText().catch(() => '');
-          }
-
-          // 6. Extract FULL Review Text (with fallbacks)
-          // Look for common text containers
-          const textLocators = [
-            '.wiI7cb',       // Standard Maps
-            '.K7oB9b',       // Search KP
-            '.MyTu7c',       // Alternative
-            '.review-text',  // Generic
-            'span.review-full-text'
-          ];
-          
-          let text = '';
-          for (const selector of textLocators) {
-              const content = await el.locator(selector).first().innerText().catch(() => '');
-              if (content.trim()) {
-                  text = content.trim();
-                  break;
-              }
-          }
-
-          // If still empty, try to find the largest text block in the element
-          if (!text) {
-              text = await el.evaluate(node => {
-                  const items = node.querySelectorAll('span, div');
-                  let longest = '';
-                  for (const item of items) {
-                      const t = item.innerText || '';
-                      if (t.length > longest.length) longest = t;
-                  }
-                  return longest;
-              }).catch(() => '');
-          }
-          
-          // 7. Extract Owner Response
-          const ownerResponse = await el.locator('.C7rEae, .m778B, .wiI7cb').nth(1).innerText().catch(() => null);
-
-          if (!text && !userName) continue; 
-
-          const data = { id, userName, rating, relativeTime, text, ownerResponse };
-          reviews.push(data);
-          
-          logCallback({ 
-            type: 'progress', 
-            message: `Scraped ${reviews.length} reviews...`, 
-            current: reviews.length, 
-            total: maxReviews 
-          });
-
-          await saveIncremental(businessName, reviews);
-        } catch (err) {
-          // Skip individual errors
+        } else {
+          staleCount = 0;
+          lastReviewCount = reviews.length;
         }
       }
-
-      if (reviews.length >= maxReviews || stopSignal.stopped) break;
-
-      // Infinite Scroll Logic
-      if (scrollableElement) {
-        await scrollableElement.evaluate((el) => {
-            el.scrollBy(0, 1000);
-            return el.scrollTop;
-        });
+    } catch (loopError) {
+      if (loopError.message.includes('Target page, context or browser has been closed') || 
+          loopError.message.includes('browser has been closed')) {
+          logCallback({ type: 'warn', message: 'Browser chiuso manualmente dall\'utente. Salvataggio dati parziali...' });
       } else {
-        await page.mouse.wheel(0, 2000);
-      }
-      
-      await page.waitForTimeout(2000);
-
-      if (reviews.length === lastReviewCount) {
-        staleCount++;
-        if (staleCount > 10) {
-            logCallback({ type: 'info', message: 'No new reviews detected. Ending.' });
-            break;
-        }
-      } else {
-        staleCount = 0;
-        lastReviewCount = reviews.length;
+          throw loopError;
       }
     }
 
@@ -255,8 +259,21 @@ async function run(url, depth, logCallback, stopSignal) {
       count: reviews.length
     };
 
+  } catch (error) {
+    if (error.message.includes('Target page, context or browser has been closed') || 
+        error.message.includes('browser has been closed')) {
+       // Already handled in the loop or occurred during initial setup
+       return { success: false, aborted: true }; 
+    }
+    console.error('Scraping error:', error);
+    logCallback({ type: 'error', message: `Critical error: ${error.message}` });
+    throw error;
   } finally {
-    await browser.close();
+    try {
+        await browser.close();
+    } catch (e) {
+        // Already closed
+    }
   }
 }
 

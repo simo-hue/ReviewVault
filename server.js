@@ -45,17 +45,23 @@ io.on('connection', (socket) => {
       }, stopSignal);
 
       if (stopSignal.stopped) {
-          socket.emit('log', { type: 'warn', message: 'Scraping stopped by user.' });
+          socket.emit('log', { type: 'warn', message: 'Scraping terminato su richiesta dell\'utente.' });
       }
 
+      const isAborted = result.aborted || false;
+
       socket.emit('finished', { 
-        success: true, 
+        success: !isAborted && result.count !== undefined, 
         filePath: result.filePath,
         fileName: result.fileName,
-        count: result.count,
-        stopped: stopSignal.stopped
+        count: result.count || 0,
+        stopped: stopSignal.stopped || isAborted
       });
     } catch (error) {
+      if (error.message.includes('Target page, context or browser has been closed')) {
+           socket.emit('finished', { success: true, count: 0, stopped: true });
+           return;
+      }
       console.error('Scraping error:', error);
       socket.emit('log', { type: 'error', message: `Critical error: ${error.message}` });
       socket.emit('finished', { success: false, error: error.message });

@@ -19,18 +19,17 @@
 - [x] **Robust Scraper Update**: Added support for Google Search Knowledge Panels and role-based selectors.
 - [x] **Reliability & Redirect Fix**: Added handling for shortened `maps.app.goo.gl` redirects and fixed empty field extraction.
 - [x] **Infinite Restart Fix**: Configured nodemon to ignore the `data/` directory.
-- [x] **Stop Scraping Feature**: Added a "Stop" button in the UI with graceful backend termination logic.
-- [x] **Full Text Reliability**: Implementato un sistema di estrazione multi-livello.
-- [x] **Custom Depth Feature**: Aggiunta la possibilità di estrarre esattamente 5 recensioni o un numero personalizzato tramite un nuovo campo di input validato.
+- [x] **Custom Depth Feature**: Aggiunta la possibilità di estrarre esattamente 5 recensioni o un numero personalizzato.
+- [x] **Browser Closure Handling**: Implementata la gestione graziosa della chiusura manuale della finestra del browser, permettendo il salvataggio dei dati parziali anche in caso di interruzione imprevista.
 
 **Next Steps**: User can start the application using `npm start` and manage it via GitHub.
 
-## [2026-04-19 19:56]: Custom Depth and Validation UI
-*Details*: Added flexible options for the number of reviews to extract.
+## [2026-04-19 20:29]: Graceful Browser Closure Handling
+*Details*: Prevented critical errors when the user manually closes the Chromium window.
 *Tech Notes*:
-- **UI Enhancements**: Added `5 recensioni` and `Personalizzato...` to the dropdown.
-- **Dynamic Fields**: The custom input field is hidden/shown based on dropdown selection using JS class toggling.
-- **Client-side Validation**: Implemented checks in `app.js` to ensure the custom depth is a positive integer before emitting the socket event.
+- **Error Trapping**: Updated `scraper.js` to catch `Target page, context or browser has been closed` inside the main loop.
+- **Partial Data Flush**: Upon detection of a closed browser, the scraper now triggers a final write of the collected `reviews` array to the data directory.
+- **Server Communication**: `server.js` now differentiates between a "Critical Error" and an "Aborted/Closed" session, sending a clean `finished` event to the UI.
 
 ## [2026-04-19 19:38]: Reliability and Extraction Fix
 *Details*: Fixed infinite restart loop and improved data extraction for redirected URLs.
